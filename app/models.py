@@ -13,6 +13,17 @@ class Token(db.Model):
     token = db.Column(db.String, nullable=False)
 
 
+class Wechat_user(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nickname = db.Column(db.String, nullable=True)
+    openID = db.Column(db.String, nullable=False)
+
+
+class Temp_token(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    temp_access_token = db.Column(db.String, nullable=False)
+
+
 @login_manager.user_loader
 def user_load(user_id):
     return User.query.get(int(user_id))

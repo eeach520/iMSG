@@ -2,10 +2,11 @@ from .smtp import Send_Mail
 from ..read_json import Json_Data
 from flask_login import logout_user
 from .verifyTokens import VerifyToken
+from .wechat import Send_Wechat
 from .sms import Send_Sms
 
 
-class Send_Message(Send_Sms, Send_Mail, Json_Data, VerifyToken):
+class Send_Message(Send_Wechat, Send_Sms, Send_Mail, Json_Data, VerifyToken):
     def __init__(self, send_data):
         Json_Data.__init__(self, send_data)
         self.__data = Json_Data.get_data(self)
@@ -38,6 +39,6 @@ class Send_Message(Send_Sms, Send_Mail, Json_Data, VerifyToken):
             elif send_ways == 'sms':
                 Send_Sms.__init__(self, self.__data)
             elif send_ways == 'wechat':
-                pass
+                Send_Wechat.__init__(self,self.__data)
             else:
                 Json_Data.set_response(self, 'error', u'不能识别发送方式，请选择smtp（邮件）、sms（短信）或wechat（微信）')
