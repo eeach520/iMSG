@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}iMESSAGE - messages{% endblock %}
+{% block active2 %}
+    class="active"
+{% endblock %}
+
+
+{% block page_content %}
+    <div class="col-xs-12">
+        <img src="static/images/logo.jpg" class="col-xs-12">
+    </div>
+    <div class="col-xs-12">
+        <div class="col-xs-12">
+            <div class="panel-primary panel">
+                <div class="panel-heading">
+                    <div class="text-center">消息详情</div>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered bg-warning">
+                        <caption class="text-primary">详细内容</caption>
+                        <thead>
+                        <tr>
+                            <th>项目</th>
+                            <th>详情</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>消息id号：</td>
+                            <td>{{ message.id }}</td>
+                        </tr>
+                        <tr>
+                            <td>发信人：</td>
+                            <td>{{ message.from_user }}</td>
+                        </tr>
+                        <tr>
+                            <td>收信人：</td>
+                            <td>{{ message.to_user }}</td>
+                        </tr>
+                        <tr>
+                            <td>发送方式：</td>
+                            {% if message.send_method=='smtp' %}
+                                <td>邮件</td>
+                            {% elif message.send_method=='sms' %}
+                                <td>短信</td>
+                            {% else %}
+                                <td>微信</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>发送结果：</td>
+                            {% if message.send_result %}
+                                <td>成功</td>
+                            {% else %}
+                                <td>失败</td>
+                            {% endif %}
+                        </tr>
+                        {% if message.send_method=='smtp' %}
+                            <tr>
+                                <td>邮件主题：</td>
+                                <td>{{ subject }}</td>
+                            </tr>
+                            <tr>
+                                <td>邮件内容：</td>
+                                <td>{{ text }}</td>
+                            </tr>
+                            {% if message.attachment %}
+                                <tr>
+                                    <td>附件：</td>
+                                    <td>{{ message.attachment }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td>附件：</td>
+                                    <td>无</td>
+                                </tr>
+                            {% endif %}
+                        {% else %}
+                            <tr>
+                                <td>消息内容：</td>
+                                <td>{{ message.content }}</td>
+                            </tr>
+                        {% endif %}
+                        {% if message.error_reason!='OK' %}
+                            <tr>
+                                <td>发送失败详情：</td>
+                                <td>{{ message.error_reason }}</td>
+                            </tr>
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

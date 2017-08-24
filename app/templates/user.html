@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}iMESSAGE - messages{% endblock %}
+{% block active3 %}
+    class="active"
+{% endblock %}
+
+{% block page_content %}
+    <div class="col-xs-12">
+        <img src="static/images/logo.jpg" class="col-xs-12">
+    </div>
+    <div class="col-xs-12">
+        <div class="col-xs-12">
+            <div class="panel-primary panel">
+                <div class="panel-heading">
+                    <div class="text-center">用户信息</div>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered bg-warning">
+                        <caption class="text-primary">用户基本信息</caption>
+                        <thead>
+                        <tr>
+                            <th>项目</th>
+                            <th>详情</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>用户名称：</td>
+                            <td>{{ user.username }}</td>
+                        </tr>
+                        <tr>
+                            <td>发送权限：</td>
+                            {% if user.available %}
+                                <td>开启</td>
+                            {% else %}
+                                <td>关闭</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>每日发送频次：</td>
+                            <td>{{ user.max_day_times }}</td>
+                        </tr>
+                        <tr>
+                            <td>每小时发送频次：</td>
+                            <td>{{ user.max_hour_times }}</td>
+                        </tr>
+                        <tr>
+                            <td>用户注册时间：</td>
+                            <td>{{ user.member_since }}</td>
+                        </tr>
+                        <tr>
+                            <td>最近活动时间：</td>
+                            <td>{{ user.last_seen }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-bordered bg-warning">
+                        <caption class="text-primary">用户发送信息统计</caption>
+                        <thead>
+                        <tr>
+                            <th>类型</th>
+                            <th>成功</th>
+                            <th>失败</th>
+                            <th>总共</th>
+                            <th>发送成功率(%)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>邮件：</td>
+                            <td>{{ smtp_ok }}</td>
+                            <td>{{ smtp_no }}</td>
+                            <td>{{ smtp_ok+smtp_no }}</td>
+                            {% if  smtp_ok+smtp_no %}
+                                <td>{{ 100*(smtp_ok/(smtp_ok+smtp_no)) }}</td>
+                            {% else %}
+                                <td>--</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>短信：</td>
+                            <td>{{ sms_ok }}</td>
+                            <td>{{ sms_no }}</td>
+                            <td>{{ sms_ok+sms_no }}</td>
+                            {% if sms_ok+sms_no %}
+                                <td>{{ 100*(sms_ok/(sms_ok+sms_no)) }}</td>
+                            {% else %}
+                                <td>--</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>微信：</td>
+                            <td>{{ wechat_ok }}</td>
+                            <td>{{ wechat_no }}</td>
+                            <td>{{ wechat_ok+wechat_no }}</td>
+                            {% if  wechat_ok+wechat_no %}
+                                <td>{{ 100*(wechat_ok/(wechat_ok+wechat_no)) }}</td>
+                            {% else %}
+                                <td>--</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>总共：</td>
+                            <td>{{ wechat_ok+sms_ok+smtp_ok }}</td>
+                            <td>{{ wechat_no+sms_no+smtp_no }}</td>
+                            <td>{{ wechat_ok+sms_ok+smtp_ok+wechat_no+sms_no+smtp_no }}</td>
+                            {% if wechat_ok+sms_ok+smtp_ok+wechat_no+sms_no+smtp_no %}
+                                <td>{{ 100*(wechat_ok+sms_ok+smtp_ok)/(wechat_ok+sms_ok+smtp_ok+wechat_no+sms_no+smtp_no) }}</td>
+                            {% else %}
+                                <td>--</td>
+                            {% endif %}
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

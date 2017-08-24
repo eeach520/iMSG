@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block title %}iMESSAGE - messages{% endblock %}
+{% block active2 %}
+    class="active"
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="static/bootstrap-table-master/dist/bootstrap-table.css"/>
+    <meta name="viewport" content="width=device-width">
+{% endblock %}
+
+
+
+{% block list %}
+    <div class="container">
+        <div class="panel panel-primary">
+            <div class="panel-heading">查询条件</div>
+            <div class="panel-body">
+                <br>
+                <form class="form-horizontal">
+                    <div class="col-md-1 col-md-offset-2">
+                        <div class="pull-right">
+                            <span class="label-primary label">开始时间:</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <input class="form-control" id="datetimepicker7" value="2000/01/01-00:00:01" type="text" name="from_date">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <div class="pull-right">
+                            <span class="label-primary label">结束时间:</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <input class="form-control" id="datetimepicker8" value="{{ now }}" type="text" name="to_date"/>
+                        </div>
+                    </div>
+                </form>
+                <br><br> <br><br>
+                <form id="formSearch" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-sm-1">发信人：</label>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" id="from" placeholder="填写发信人：">
+                        </div>
+                        <label class="control-label col-sm-1">IP地址：</label>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" id="ip" placeholder="填写IP地址：">
+                        </div>
+                        <label class="control-label col-sm-1">收信人：</label>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" id="to" placeholder="填写收信人：">
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="btn btn-primary col-md-4 col-md-offset-1" id="method">
+                                <option value="全部">全部</option>
+                                <option value="微信">微信</option>
+                                <option value="邮件">邮件</option>
+                                <option value="短信">短信</option>
+                            </select>
+                            <div class="checkbox col-md-6 col-md-offset-1">
+                                <label>
+                                    <input type="checkbox" value="true" id="result">发送成功
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="panel-primary panel">
+            <div id="toolbar" class="btn-group">
+                <button id="btn_query" type="button" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>查询
+                </button>
+                <button id="btn_delete" type="button" class="btn btn-danger">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>删除
+                </button>
+            </div>
+            <div>
+                <table id="mytab" class="table table-bordered bg-warning"></table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+
+
+{% block page_content %}
+    <div class="page-header">
+        <h1>Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Stranger{% endif %}!</h1>
+    </div>
+{% endblock %}
+
+
+
+{% block js %}
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="static/bootstrap-table-master/dist/bootstrap-table.js"></script>
+    <script src="static/bootstrap-table-master/dist/locale/bootstrap-table-zh-CN.js"></script>
+    <script src="static/knockout-3.4.2/dist/knockout.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('#btn_query').on('click', function () {
+                $('#mytab').bootstrapTable("refresh")
+            });
+            $('#btn_delete').on('click', function () {
+                $.ajax({
+                    url: '/delete',
+                    type: 'POST',
+                    data: JSON.stringify(getIdSelections()),
+                    contentType: "application/json",
+                    dataType: "json",
+                    formatLoadingMessage: function () {
+                        return "请稍等，正在加载中...";
+                    },
+                    success: function (data, status) {
+                        if (data['result'] == 'success') {
+                            $('#mytab').bootstrapTable('remove', {
+                                field: 'index',
+                                values: getIdSelections()
+                            });
+                        } else {
+                            alert("这个可不能删除哟！")
+                        }
+                    },
+                    error: function () {
+                        alert("连接错误！")
+                    }
+                })
+            });
+            $(window).resize(function () {
+                $('#matab').bootstrapTable('resetView', {
+                    height: tableHeight()
+                })
+            });
+            $('#mytab').bootstrapTable({
+                url: 'http://127.0.0.1/dataget',
+                dataField: "rows",
+                {#                search: true,#}
+                pagination: true,
+                height: tableHeight(),
+                pageNumber: 1,
+                pageSize: 20,
+                pageList: [5, 10, 20, 50],
+                sidePagination: "server",
+                contentType: "application/json",
+                dataType: "json",
+                method: "post",
+                searchAlign: "left",
+                showToggle: true,
+                striped: true,
+                queryType: 'limit',
+                queryParams: queryParams,
+                searchOnEnterKey: "true",
+                showRefresh: "true",
+                showColumns: "true",
+                buttonsAlign: "left",
+                toolbar: "#toolbar",
+                toolbarAlign: "right",
+                sortsble: true,
+                minimumCountColumns: 2,
+                paginationPreText: "上一页",
+                paginationNextText: "下一页",
+                columns: [
+                    {
+                        title: "全选",
+                        field: "select",
+                        checkbox: true,
+                        width: 20,//宽度
+                    },
+                    {
+                        title: "序号",//标题
+                        field: "index",//键名
+                        sortable: false,//是否可排序
+                        order: "desc"//默认排序方
+                    },
+                    {
+                        title: "数据库id",
+                        filed: "id",
+                        visible: false
+                    },
+                    {
+                        field: "from_user",
+                        title: "发信人",
+                        sortable: true,
+                        align: 'center',
+                        valign: 'middle',
+                        titleTooltip: "this is name"
+                    },
+                    {
+                        field: "ip",
+                        title: "发信人IP",
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: "to_user",
+                        title: "收信人",
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: "send_method",
+                        title: "发送方式",
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: false
+                    },
+                    {
+                        field: "content",
+                        title: "消息内容",
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: false
+                    },
+                    {
+                        field: "send_result",
+                        title: "发送结果",
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: false
+                    },
+                    {
+                        field: "send_time",
+                        title: "发送时间",
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: 'operate',
+                        title: '操作',
+                        align: 'center',
+                        valign: 'middle',
+                        formatter: operateFormatter //自定义方法，添加操作按钮
+                    }
+                ],
+                onClickRow: function (row, $element) {
+                    $element.css("background-color", "orange");
+                },
+                locale: "zh-CN"
+            }).on('load-error.bs.table', function (e, status) {
+                alert("似乎好像大约大概可能也许是网络出了一些问题吧");
+            });
+        });
+        function tableHeight() {
+            return $(window).height() - 50;
+        }
+        var queryParams = function (params) {
+            var param = {
+                pageIndex: Math.ceil(params.offset / params.limit) + 1,
+                pageSize: params.limit,
+                order: params.order,
+                ordername: params.sort,
+                searchText: params.search,
+                start_time: $('#datetimepicker7').val(),
+                end_time: $('#datetimepicker8').val(),
+                from_user: $('#from').val(),
+                method: $('#method').val(),
+                ip: $('#ip').val(),
+                to: $('#to').val(),
+                result: document.getElementById("result").checked
+            };
+            return param;
+        };
+        var operateFormatter = function (value, row, index) {//赋予的参数
+            return [
+                '<a href="/message?id=' + row.id + '"><button class="btn btn-primary btn-sm rightSize detailBtn" type="button"><i class="fa fa-paste"></i><span class="glyphicon glyphicon-hand-right"></span> 详情</button></a>',
+            ].join('');
+        };
+        function getIdSelections() {
+            return $.map($("#mytab").bootstrapTable('getSelections'), function (row) {
+                return row.index;
+            });
+        };
+        var fun_i = 1;
+    </script>
+{% endblock %}

@@ -1,92 +1,189 @@
+from flask import render_template, abort, flash, redirect, url_for, request, make_response
+from flask import send_from_directory
 from . import main
-from flask import jsonify, request, make_response
-from flask_login import login_required
-from .send_message import Send_Message
-from .wechat import Send_Wechat
-import xml.etree.cElementTree as et
-from ..models import Wechat_user
 from .. import db
-import hashlib, time, re
+import json
+import datetime
+from werkzeug.security import generate_password_hash
+from flask import jsonify
+from flask_login import login_required, current_user
+from ..models import User, Message
+from .response_message import Reponse_Message
 
 
 @main.route('/', methods=['GET', 'POST'])
-def hello_world():
-    return jsonify({'注册地址': '/register', '登陆地址': '/login', '发送信息': '/send'})
+def index():
+    return render_template('index.html')
 
 
-@main.route('/send', methods=['GET', 'POST'])
+@main.route('/messages', methods=['GET', 'POST'])
 @login_required
-def send():
+def message():
+    now = str(datetime.datetime.now().strftime('%Y/%m/%d-%H:%M:%S'))
+    return render_template('main/message.html', now=now)
+
+
+@main.route('/message', methods=['GET', 'POST'])
+@login_required
+def show_message():
+    id = request.args.get('id')
+    print(id)
+    message_data = Message.query.filter_by(id=id).first()
+    subject = None
+    text = None
+    if message_data.send_method == 'smtp':
+        print(message_data.content.split('\''))
+        subject = message_data.content.split('\'')[3]
+        text = message_data.content.split('\'')[7]
+    if not message_data:
+        abort(404)
+    if current_user.role_id == 1 or message_data.from_user == current_user.username:
+        print('adasd')
+        pass
+    else:
+        abort(404)
+    return render_template('message.html', message=message_data, subject=subject, text=text)
+
+
+@main.route('/user', methods=['GET', 'POST'])
+@login_required
+def show_user():
+    username = request.args.get('username')
+    user_message = User.query.filter_by(username=username).first()
+    smtp_times_ok = Message.query.filter_by(from_user=username, send_method='smtp', send_result=True).count()
+    sms_times_ok = Message.query.filter_by(from_user=username, send_method='sms', send_result=True).count()
+    wechat_times_ok = Message.query.filter_by(from_user=username, send_method='wechat', send_result=True).count()
+    smtp_times_no = Message.query.filter_by(from_user=username, send_method='smtp', send_result=False).count()
+    sms_times_no = Message.query.filter_by(from_user=username, send_method='sms', send_result=False).count()
+    wechat_times_no = Message.query.filter_by(from_user=username, send_method='wechat', send_result=False).count()
+    if not user_message:
+        abort(404)
+    if current_user.role_id == 1 or username == current_user.username:
+        pass
+    else:
+        abort(404)
+    return render_template('user.html', user=user_message, smtp_ok=smtp_times_ok, sms_ok=sms_times_ok,
+                           wechat_ok=wechat_times_ok, smtp_no=smtp_times_no, sms_no=sms_times_no,
+                           wechat_no=wechat_times_no)
+
+
+@main.route('/userdata', methods=['GET', 'POST'])
+@login_required
+def user_data():
     if request.method == 'POST':
-        send_data = request.get_data()
-        send_message = Send_Message(send_data)
-        return send_message.get_response_to_views()
-    return jsonify({'error': "只接受POST方法"})
-
-
-@main.route('/weixin', methods=['GET', 'POST'])
-def weixin():
-    if request.method == 'GET':
-        data = request.args
-        token = 'zhangxinglei'
-        signature = data.get('signature', '')
-        timestamp = data.get('timestamp', '')
-        nonce = data.get('nonce', '')
-        echostr = data.get('echostr', '')
-        my_list = [token, timestamp, nonce]
-        my_list.sort()
-        s = my_list[0] + my_list[1] + my_list[2]
-        hashcode = hashlib.sha1(s.encode('utf-8')).hexdigest()
-        if hashcode == signature:
-            return echostr
+        if request.get_data():
+            print('1', json.loads(request.get_data()))
+            page = int(json.loads(request.get_data())['pageIndex'])
+            size = int(json.loads(request.get_data())['pageSize'])
+            search = None
+            if 'searchText' in dict(json.loads(request.get_data())).keys():
+                search = json.loads(request.get_data())['searchText']
+        total = User.query.filter_by(role_id=2).count()
+        pagination = User.query.filter_by(role_id=2)
+        if search:
+            print('hu')
+            search = '%' + search + '%'
+            pagination = pagination.filter(User.username.like(search)).all()
         else:
-            return ""
+            pagination = pagination.all()
+        response = []
+        for index in range(len(pagination)):
+            if ((index + 1) > (page - 1) * size) and ((index + 1) <= (page * size)):
+                response.append({"id": index + 1, "index": pagination[index].id, "username": pagination[index].username,
+                                 "per_day": pagination[index].max_day_times,
+                                 "per_hour": pagination[index].max_hour_times, "available": pagination[index].available,
+                                 "since": pagination[index].member_since, "seen": pagination[index].last_seen})
+        return jsonify({"total": total, "rows": response})
+    return ''
+
+
+@main.route('/users')
+@login_required
+def user():
+    return render_template('main/user.html')
+
+
+@main.route('/dataget', methods=['GET', 'POST'])
+@login_required
+def data_get():
+    if request.method == 'POST':
+        res = Reponse_Message(request.get_data())
+        return res.response_rows()
+    return ''
+
+
+@main.route('/delete', methods=['GET', 'POST'])
+@login_required
+def delete():
+    if request.method == 'POST':
+        print(request.get_data())
+        print(json.loads(request.get_data()), type(json.loads(request.get_data())))
+        try:
+            data = json.loads(request.get_data())
+            for item in data:
+                user = User.query.filter_by(username=item).first()
+                db.session.delete(user)
+                db.session.commit()
+            response = {"success": "OK"}
+        except Exception as e:
+            response = {"success": "no", "error": str(e)}
+    return jsonify(response)
+
+
+@main.route('/modify', methods=['GET', 'POST'])
+@login_required
+def modify_user():
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.get_data())
+            print(data)
+            username = data[0]
+            per_day = int(data[1])
+            per_hour = int(data[2])
+            available = data[3]
+            user = User.query.filter_by(username=username).first()
+            user.modify(per_day, per_hour, available)
+            db.session.add(user)
+            db.session.commit()
+            response = {'success': "OK"}
+        except Exception as e:
+            print(e)
+            response = {'success': 'no', 'error': str(e)}
+        return jsonify(response)
+    return 'only post'
+
+
+@main.route('/add', methods=['GET', 'POST'])
+@login_required
+def add():
     if request.method == 'POST':
         data = request.get_data()
-        xml_rec = et.fromstring(data)
-        ToUserName = xml_rec.find('ToUserName').text
-        fromUser = xml_rec.find('FromUserName').text
-        MsgType = xml_rec.find('MsgType').text
-        Content = " "
-        if MsgType == 'event':
-            msgcontent = xml_rec.find('Event').text
-            if msgcontent == 'subscribe':
-                user = Wechat_user.query.filter_by(openID=fromUser).first()
-                if user is None:
-                    Content = u'亲，你好！欢迎第一次光临本微信，我是小i。为了让我更方便记住你，你可以输入“name:你的昵称”（引号不用输入），让我为你存档哦！'
+        try:
+            data = json.loads(data)
+            print(data, type(data[2]), type(data[4]), data[4])
+            username = data[0]
+            password = data[1]
+            per_day = data[2]
+            per_hour = data[3]
+            available = data[4]
+            if username != '' and password != '' and per_day != '' and per_hour != '' and available != '':
+                old_user = User.query.filter_by(username=username).first()
+                if old_user:
+                    response = {'success': 'no', 'error': '用户名已存在'}
                 else:
-                    Content = u'欢迎回来' + user.nickname
+                    per_day = int(per_day)
+                    per_hour = int(per_hour)
+                    u = User(username, generate_password_hash(password))
+                    db.session.add(u)
+                    db.session.commit()
+                    u.modify(per_day, per_hour, available)
+                    db.session.add(u)
+                    db.session.commit()
+                    response = {'success': 'OK'}
             else:
-                Content = None
-        elif MsgType == 'text':
-            from_Content = xml_rec.find('Content').text
-            if re.match(r'name:', from_Content):
-                nickname = from_Content.split(':')[1]
-                if re.match(r'[0-9a-zA_Z\_]{4,9}', nickname):
-                    old_user = Wechat_user.query.filter_by(nickname=nickname).first()
-                    if old_user is None:
-                        db.session.add(Wechat_user(nickname=nickname, openID=fromUser))
-                        db.commit()
-                        confirm_user = {"touser": fromUser,
-                                        "content": u'尊敬的' + nickname + u'先生/女士，我们已经将您的信息保存，感谢您的信任，祝您使用愉快'}
-                        new_user=Send_Wechat(confirm_user)
-                    else:
-                        Content = u'该昵称已存在'
-                else:
-                    Content = u'昵称不合法（长度为4-9，只能包含字母、数字和_）'
-            else:
-                Content = u'收到您发的信息“' + xml_rec.find('Content').text + '”，但我目前不会响应'
-                pass
-        else:
-            Content = u'这是' + MsgType + u',我暂时还不认识!!!'
-            pass
-        xmlss = "<xml><ToUserName><![CDATA[%s]]></ToUserName><FromUserName><![CDATA[%s]]></FromUserName><CreateTime>%s</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[%s]]></Content><FuncFlag>0</FuncFlag></xml>" \
-                % (fromUser, ToUserName, str(int(time.time())), Content)
-        response = make_response(xmlss)
-        response.content_type = "application/xml"
-        return response
-
-
-@main.app_errorhandler(404)
-def page_not_found(error):
-    return jsonify({"error": "哈哈,传说中的404错误"})
+                response = {'success': 'no', 'error': '字段不能为空'}
+        except Exception as e:
+            print(e)
+            response = {'sucess': 'no', 'error': str(e)}
+        return jsonify(response)
+    return 'only post'

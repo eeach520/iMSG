@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="data.sqlite">
+  <database-model serializer="dbm" rdbms="SQLITE" format-version="4.2">
+    <root id="1"/>
+    <schema id="2" parent="1" name="main">
+      <Current>1</Current>
+      <Visible>1</Visible>
+    </schema>
+    <table id="3" parent="2" name="message"/>
+    <table id="4" parent="2" name="roles"/>
+    <table id="5" parent="2" name="sqlite_master"/>
+    <table id="6" parent="2" name="tokens"/>
+    <table id="7" parent="2" name="users"/>
+    <table id="8" parent="2" name="wechat"/>
+    <column id="9" parent="3" name="id">
+      <DataType>INTEGER|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="10" parent="3" name="from_user">
+      <Position>1</Position>
+      <DataType>VARCHAR(64)|0</DataType>
+    </column>
+    <column id="11" parent="3" name="ip">
+      <Position>2</Position>
+      <DataType>VARCHAR|0</DataType>
+    </column>
+    <column id="12" parent="3" name="to_user">
+      <Position>3</Position>
+      <DataType>VARCHAR(64)|0</DataType>
+    </column>
+    <column id="13" parent="3" name="send_method">
+      <Position>4</Position>
+      <DataType>VARCHAR(64)|0</DataType>
+    </column>
+    <column id="14" parent="3" name="send_result">
+      <Position>5</Position>
+      <DataType>BOOLEAN|0</DataType>
+    </column>
+    <column id="15" parent="3" name="send_time">
+      <Position>6</Position>
+      <DataType>VARCHAR|0</DataType>
+    </column>
+    <column id="16" parent="3" name="content">
+      <Position>7</Position>
+      <DataType>VARCHAR|0</DataType>
+    </column>
+    <column id="17" parent="3" name="attachment">
+      <Position>8</Position>
+      <DataType>VARCHAR|0</DataType>
+    </column>
+    <column id="18" parent="3" name="error_reason">
+      <Position>9</Position>
+      <DataType>VARCHAR|0</DataType>
+    </column>
+    <index id="19" parent="3" name="ix_message_from_user">
+      <ColNames>from_user</ColNames>
+    </index>
+    <index id="20" parent="3" name="ix_message_ip">
+      <ColNames>ip</ColNames>
+    </index>
+    <index id="21" parent="3" name="ix_message_to_user">
+      <ColNames>to_user</ColNames>
+    </index>
+    <index id="22" parent="3" name="ix_message_send_method">
+      <ColNames>send_method</ColNames>
+    </index>
+    <index id="23" parent="3" name="ix_message_send_result">
+      <ColNames>send_result</ColNames>
+    </index>
+    <index id="24" parent="3" name="ix_message_send_time">
+      <ColNames>send_time</ColNames>
+    </index>
+    <index id="25" parent="3" name="ix_message_content">
+      <ColNames>content</ColNames>
+    </index>
+    <key id="26" parent="3">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <check id="27" parent="3">
+      <Predicate>send_result IN (0, 1)</Predicate>
+    </check>
+    <column id="28" parent="4" name="id">
+      <DataType>INTEGER|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="29" parent="4" name="name">
+      <Position>1</Position>
+      <DataType>VARCHAR(64)|0</DataType>
+    </column>
+    <index id="30" parent="4" name="sqlite_autoindex_roles_1">
+      <ColNames>name</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <key id="31" parent="4">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <key id="32" parent="4">
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_roles_1</UnderlyingIndexName>
+    </key>
+    <column id="33" parent="5" name="type">
+      <DataType>text|0</DataType>
+    </column>
+    <column id="34" parent="5" name="name">
+      <Position>1</Position>
+      <DataType>text|0</DataType>
+    </column>
+    <column id="35" parent="5" name="tbl_name">
+      <Position>2</Position>
+      <DataType>text|0</DataType>
+    </column>
+    <column id="36" parent="5" name="rootpage">
+      <Position>3</Position>
+      <DataType>integer|0</DataType>
+    </column>
+    <column id="37" parent="5" name="sql">
+      <Position>4</Position>
+      <DataType>text|0</DataType>
+    </column>
+    <column id="38" parent="6" name="id">
+      <DataType>INTEGER|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="39" parent="6" name="token">
+      <Position>1</Position>
+      <DataType>VARCHAR|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="40" parent="6" name="generate_time">
+      <Position>2</Position>
+      <DataType>VARCHAR|0</DataType>
+    </column>
+    <key id="41" parent="6">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <column id="42" parent="7" name="id">
+      <DataType>INTEGER|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="43" parent="7" name="username">
+      <Position>1</Position>
+      <DataType>VARCHAR(64)|0</DataType>
+    </column>
+    <column id="44" parent="7" name="password">
+      <Position>2</Position>
+      <DataType>VARCHAR|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="45" parent="7" name="available">
+      <Position>3</Position>
+      <DataType>BOOLEAN|0</DataType>
+    </column>
+    <column id="46" parent="7" name="max_day_times">
+      <Position>4</Position>
+      <DataType>INTEGER|0</DataType>
+    </column>
+    <column id="47" parent="7" name="max_hour_times">
+      <Position>5</Position>
+      <DataType>INTEGER|0</DataType>
+    </column>
+    <column id="48" parent="7" name="member_since">
+      <Position>6</Position>
+      <DataType>VARCHAR|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="49" parent="7" name="last_seen">
+      <Position>7</Position>
+      <DataType>VARCHAR|0</DataType>
+    </column>
+    <column id="50" parent="7" name="role_id">
+      <Position>8</Position>
+      <DataType>INTEGER|0</DataType>
+    </column>
+    <index id="51" parent="7" name="ix_users_username">
+      <ColNames>username</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <key id="52" parent="7">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <foreign-key id="53" parent="7">
+      <ColNames>role_id</ColNames>
+      <RefTableName>roles</RefTableName>
+      <RefColNames>id</RefColNames>
+    </foreign-key>
+    <check id="54" parent="7">
+      <Predicate>available IN (0, 1)</Predicate>
+    </check>
+    <column id="55" parent="8" name="id">
+      <DataType>INTEGER|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="56" parent="8" name="openID">
+      <Position>1</Position>
+      <DataType>VARCHAR|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="57" parent="8" name="nickname">
+      <Position>2</Position>
+      <DataType>VARCHAR|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <index id="58" parent="8" name="sqlite_autoindex_wechat_1">
+      <ColNames>openID</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <index id="59" parent="8" name="ix_wechat_nickname">
+      <ColNames>nickname</ColNames>
+    </index>
+    <key id="60" parent="8">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <key id="61" parent="8">
+      <ColNames>openID</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_wechat_1</UnderlyingIndexName>
+    </key>
+  </database-model>
+</dataSource>
