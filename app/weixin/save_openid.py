@@ -16,5 +16,5 @@ class Save_Openid:
         else:
             user = Wechat(self.__openid, nickname)
             db.session.add(user)
-            db.session.add()
+            db.session.commit()
             return u'您iMSG的账号是' + nickname

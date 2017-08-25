@@ -150,8 +150,8 @@ def data_get():
 @main.route('/download/<file_path>/', methods=['GET', 'POST'])
 def download(file_path):
     print(file_path, type(file_path))
-    if os.path.isfile('D:/git-git/files/' + file_path):
-        response = make_response(send_from_directory('D:/git-git/files/', file_path, as_attachment=True))
+    if os.path.isfile('/home/files/' + file_path):
+        response = make_response(send_from_directory('/home/files/', file_path, as_attachment=True))
         response.headers["Content-Disposition"] = "attachment; filename={}".format(file_path.encode().decode('latin-1'))
         return response
     else:

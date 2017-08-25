@@ -72,7 +72,7 @@ class Send_Message(Send_Wechat, Send_Sms, Send_Mail, Read_Json, Save_Message, To
         if isinstance(self.__data['to'], list):
             self.__to_user = []
             for item in self.__data['to']:
-                user = Wechat.query.filter_by(username=item).first()
+                user = Wechat.query.filter_by(nickname=item).first()
                 if user:
                     self.__to_user.append(user.openID)
                 else:

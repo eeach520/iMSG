@@ -67,7 +67,7 @@ class Send_Mail(Read_Json, Save_Message):
             self.__smtp.sendmail(self.__username + SMTP.ADDRESS, self.__to_Address, self.__message.as_string())
             super().set_response(ERROR[0])
             if self.__attachment:
-                file_name = 'D:/git-git/files/' + str(
+                file_name = '/home/files/' + str(
                     datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-")) + self.__filename
                 __file = open(file_name, 'wb')
                 __file.write(self.__attachment)

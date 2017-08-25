@@ -6,7 +6,7 @@ import xml.etree.cElementTree as et
 from .save_openid import Save_Openid
 
 
-@weixin.route('/bind')
+@weixin.route('/bind',methods=['GET','POST'])
 def index():
     if request.method == 'GET':
         data = request.args
