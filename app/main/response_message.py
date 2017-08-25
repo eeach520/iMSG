@@ -4,10 +4,11 @@ from flask import jsonify
 
 
 class Reponse_Message(Read_Json):
-    def __init__(self, json_data):
+    def __init__(self, json_data, current_username):
+        print('asdasd', json_data)
         Read_Json.__init__(self, json_data)
         self.__data = Read_Json.get_data(self)
-        print(self.__data)
+        print('asd', self.__data)
         self.__start = self.__data['start_time'].replace('-', ' ').replace('/', '-')
         self.__end = self.__data['end_time'].replace('-', ' ').replace('/', '-')
         self.__from = self.__data['from_user']
@@ -18,6 +19,9 @@ class Reponse_Message(Read_Json):
         self.__page = self.__data['pageIndex']
         self.__order = self.__data['order']
         self.__size = self.__data['pageSize']
+        self.__limit = self.__data['limit_user']
+        self.__limit_name = current_username
+        print(type(self.__limit))
         self.__datas = None
         self.__ordername = None
         if 'ordername' in self.__data.keys():
@@ -52,6 +56,8 @@ class Reponse_Message(Read_Json):
                 self.__datas = Message.query.order_by(Message.id.desc())
 
     def get_data_search(self):
+        if self.__limit == '2':
+            self.__datas = self.__datas.filter_by(from_user=self.__limit_name)
         if self.__start != '' and self.__end != '':
             self.__datas = self.__datas.filter(Message.send_time > self.__start, Message.send_time < self.__end)
         if self.__start != '' and self.__end == '':
@@ -80,8 +86,8 @@ class Reponse_Message(Read_Json):
         for index in range(len(pagination)):
             if ((index + 1) > (self.__page - 1) * self.__size) and ((index + 1) <= (self.__page * self.__size)):
                 content = pagination[index].content
-                if pagination[index].send_method=='smtp':
-                    content=content.split('\'')[3]
+                if pagination[index].send_method == 'smtp':
+                    content = content.split('\'')[3]
                 response.append(
                     {"index": index + 1, "id": pagination[index].id, "from_user": pagination[index].from_user,
                      "ip": pagination[index].ip, "to_user": pagination[index].to_user,

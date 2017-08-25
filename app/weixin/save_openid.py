@@ -8,8 +8,8 @@ class Save_Openid:
 
     def save(self):
         number = Wechat.query.count()
-        nickname = 'iMSG' + str(10000 + number)
-        old_user = Wechat.query.filter_by(openid=self.__openid).first()
+        nickname = 'iMSG-' + str(10000 + number + 1)
+        old_user = Wechat.query.filter_by(openID=self.__openid).first()
         if old_user:
             old_nickname = old_user.nickname
             return u'您已经有iMSG账号了：' + old_nickname

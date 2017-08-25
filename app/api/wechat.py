@@ -1,6 +1,7 @@
 from urllib import request
 import json
 import datetime
+from app.models import Wechat
 from .read_json import Read_Json
 from .save_message import Save_Message
 from .config import WECHAT, ERROR
@@ -32,10 +33,11 @@ class Send_Wechat(Read_Json, Save_Message):
             for item in self.__to_user:
                 request_answer = self.send_message(item)
                 if request_answer['errcode'] != 0:
-                    super().add_response_wechat('details',{item:request_answer})
+                    super().add_response_wechat('details',
+                                                {Wechat.query.filter_by(openID=item).first().nickname: request_answer})
                     judge = False
                 else:
-                    super().add_response_wechat('details',{item:ERROR[0]})
+                    super().add_response_wechat('details', {Wechat.query.filter_by(openID=item).first().nickname: ERROR[0]})
             if judge:
                 super().set_response(ERROR[0])
             else:

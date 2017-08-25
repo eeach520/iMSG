@@ -12,6 +12,9 @@
 
 
 {% block list %}
+    <div class="hidden">
+    <p id="limit_user">{{ current_user.role_id }}</p>
+    </div>
     <div class="container">
         <div class="panel panel-primary">
             <div class="panel-heading">查询条件</div>
@@ -139,7 +142,7 @@
                 })
             });
             $('#mytab').bootstrapTable({
-                url: 'http://127.0.0.1/dataget',
+                url: '/dataget',
                 dataField: "rows",
                 {#                search: true,#}
                 pagination: true,
@@ -266,7 +269,8 @@
                 method: $('#method').val(),
                 ip: $('#ip').val(),
                 to: $('#to').val(),
-                result: document.getElementById("result").checked
+                result: document.getElementById("result").checked,
+                limit_user:document.getElementById('limit_user').innerText,
             };
             return param;
         };

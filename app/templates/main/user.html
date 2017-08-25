@@ -16,14 +16,17 @@
 {% block list %}
     <div class="container">
         <div class="panel-primary panel">
-            <div id="toolbar" class="btn-group">
-                <button id="btn_add" type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModals">
-                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
-                </button>
-                <button id="btn_delete" type="button" class="btn btn-primary">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>删除
-                </button>
-            </div>
+            {% if current_user.role_id==1 %}
+                <div id="toolbar" class="btn-group">
+                    <button id="btn_add" type="button" class="btn btn-primary" data-toggle="modal"
+                            data-target="#myModals" onclick="reset()">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
+                    </button>
+                    <button id="btn_delete" type="button" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>删除
+                    </button>
+                </div>
+            {% endif %}
             <table id="mytab" class="table table-striped bg-warning"></table>
         </div>
     </div>
@@ -145,9 +148,9 @@
             })
             $('#btn_delete').on('click', function () {
                 var index = getIdSelections();
-                if(index.length==0){
+                if (index.length == 0) {
                     alert('至少选择一个用户')
-                }else {
+                } else {
                     var r = confirm('你确定要删除用户' + index + '吗？', 'iMSG提示');
                     if (r) {
                         $.ajax({
@@ -167,7 +170,7 @@
                                     });
                                     alert('删除成功')
                                 } else {
-                                    alert("删除失败"+data['error'])
+                                    alert("删除失败" + data['error'])
                                 }
                             },
                             error: function () {
@@ -375,7 +378,7 @@
                 data: JSON.stringify([username, per_day, per_hour, sex]),
                 dataType: 'json',
                 contentType: "application/json",
-                success: function (data,status) {
+                success: function (data, status) {
                     var a = data['success']
                     if (a == 'OK') {
                         alert('修改成功');
@@ -413,6 +416,13 @@
             } else {
                 alert('密码必须一致')
             }
+        }
+        function reset() {
+            document.getElementById("add_username").value='';
+            document.getElementById('add_password').value='';
+            document.getElementById('add_password2').value='';
+            document.getElementById("add_per_day").value='';
+            document.getElementById("add_per_hour").value='';
         }
     </script>
 {% endblock %}

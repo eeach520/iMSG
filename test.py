@@ -46,3 +46,6 @@ import base64
 # for i in a:
 #     print(i)
 # a='asdas_asdad-asdasd'
+#
+import os
+print(os.path.isfile('D:/git-git/files/haha.txt.txt'))

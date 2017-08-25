@@ -34,8 +34,16 @@
                             <td>{{ message.from_user }}</td>
                         </tr>
                         <tr>
+                            <td>发信人IP：</td>
+                            <td>{{ message.ip }}</td>
+                        </tr>
+                        <tr>
                             <td>收信人：</td>
                             <td>{{ message.to_user }}</td>
+                        </tr>
+                        <tr>
+                            <td>发送时间：</td>
+                            <td>{{ message.send_time }}</td>
                         </tr>
                         <tr>
                             <td>发送方式：</td>
@@ -67,7 +75,7 @@
                             {% if message.attachment %}
                                 <tr>
                                     <td>附件：</td>
-                                    <td>{{ message.attachment }}</td>
+                                    <td><a href="{{ url_for('main.download',file_path=filename) }}">{{ message.attachment }}</a></td>
                                 </tr>
                             {% else %}
                                 <tr>

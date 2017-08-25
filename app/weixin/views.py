@@ -32,7 +32,7 @@ def index():
         Content = u'您好，暂时不能为您服务！'
         if MsgType == 'event':
             if xml_rec.find('Event').text == 'CLICK':
-                if xml_rec.find('EventKey') == 'get_msgid':
+                if xml_rec.find('EventKey').text == 'get_openid':
                     save_openid = Save_Openid(fromUser)
                     Content = save_openid.save()
             elif xml_rec.find('Event').text == 'subscribe':

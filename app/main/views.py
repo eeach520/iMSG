@@ -3,8 +3,9 @@ from flask import send_from_directory
 from . import main
 from .. import db
 import json
+import os
 import datetime
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
 from flask_login import login_required, current_user
 from ..models import User, Message
@@ -14,6 +15,32 @@ from .response_message import Reponse_Message
 @main.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
+
+
+@main.route('/admin', methods=['GET', 'POST'])
+@login_required
+def admin():
+    return render_template('main/admin.html')
+
+
+@main.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if request.method == 'POST':
+        data = json.loads(request.get_data())
+        print(data)
+        user = User.query.filter_by(username=current_user.username).first()
+        if check_password_hash(current_user.password, data[0]):
+            try:
+                user.password = generate_password_hash(data[1])
+                db.session.add(user)
+                db.session.commit()
+                response = {"success": "OK"}
+            except Exception as e:
+                response = {"success": "no", "error": str(e)}
+        else:
+            response = {"success": "no", "error": "原密码错误"}
+        return jsonify(response)
+    return 'asdas'
 
 
 @main.route('/messages', methods=['GET', 'POST'])
@@ -31,6 +58,9 @@ def show_message():
     message_data = Message.query.filter_by(id=id).first()
     subject = None
     text = None
+    filename = None
+    if message_data.attachment:
+        filename = message_data.attachment.split('/')[len(message_data.attachment.split('/')) - 1]
     if message_data.send_method == 'smtp':
         print(message_data.content.split('\''))
         subject = message_data.content.split('\'')[3]
@@ -42,7 +72,7 @@ def show_message():
         pass
     else:
         abort(404)
-    return render_template('message.html', message=message_data, subject=subject, text=text)
+    return render_template('message.html', message=message_data, subject=subject, text=text, filename=filename)
 
 
 @main.route('/user', methods=['GET', 'POST'])
@@ -80,12 +110,16 @@ def user_data():
                 search = json.loads(request.get_data())['searchText']
         total = User.query.filter_by(role_id=2).count()
         pagination = User.query.filter_by(role_id=2)
-        if search:
-            print('hu')
-            search = '%' + search + '%'
-            pagination = pagination.filter(User.username.like(search)).all()
+        if current_user.role_id == 2:
+            pagination = pagination.filter_by(username=current_user.username).all()
+            total = 1
         else:
-            pagination = pagination.all()
+            if search:
+                print('hu')
+                search = '%' + search + '%'
+                pagination = pagination.filter(User.username.like(search)).all()
+            else:
+                pagination = pagination.all()
         response = []
         for index in range(len(pagination)):
             if ((index + 1) > (page - 1) * size) and ((index + 1) <= (page * size)):
@@ -107,9 +141,21 @@ def user():
 @login_required
 def data_get():
     if request.method == 'POST':
-        res = Reponse_Message(request.get_data())
+        print(request.get_data())
+        res = Reponse_Message(request.get_data(), current_user.username)
         return res.response_rows()
     return ''
+
+
+@main.route('/download/<file_path>/', methods=['GET', 'POST'])
+def download(file_path):
+    print(file_path, type(file_path))
+    if os.path.isfile('D:/git-git/files/' + file_path):
+        response = make_response(send_from_directory('D:/git-git/files/', file_path, as_attachment=True))
+        response.headers["Content-Disposition"] = "attachment; filename={}".format(file_path.encode().decode('latin-1'))
+        return response
+    else:
+        abort(404)
 
 
 @main.route('/delete', methods=['GET', 'POST'])
@@ -127,7 +173,8 @@ def delete():
             response = {"success": "OK"}
         except Exception as e:
             response = {"success": "no", "error": str(e)}
-    return jsonify(response)
+        return jsonify(response)
+    return 'null'
 
 
 @main.route('/modify', methods=['GET', 'POST'])
@@ -184,6 +231,6 @@ def add():
                 response = {'success': 'no', 'error': '字段不能为空'}
         except Exception as e:
             print(e)
-            response = {'sucess': 'no', 'error': str(e)}
+            response = {'success': 'no', 'error': str(e)}
         return jsonify(response)
     return 'only post'
